@@ -63,7 +63,7 @@ const toastEl = document.getElementById('toast');
 const toastBody = document.getElementById('toast-body');
 const toastBootstrap = new bootstrap.Toast(toastEl);
 
-// CSS for toast icon and glowing line (add dynamically via JS)
+// CSS for toast icon and glowing line
 const style = document.createElement('style');
 style.innerHTML = `
 .toast {
@@ -78,6 +78,7 @@ style.innerHTML = `
   height: 100%;
   width: 5px;
   background: linear-gradient(90deg, #0d6efd, #6ea8ff);
+  transform-origin: left;
   animation: glowLine 3s linear forwards;
 }
 @keyframes glowLine {
@@ -110,7 +111,6 @@ function showToast(message, type = "primary") {
   toastBootstrap.show();
 }
 
-
 // ---------------------------
 // Helper: Get current timestamp in dd/mm/yyyy hh:mm:ss AM/PM
 // ---------------------------
@@ -128,7 +128,6 @@ function getCurrentTimestamp() {
   hh = hh % 12;
   hh = hh ? hh : 12;
 
-  // Add leading zeros
   dd = dd < 10 ? '0' + dd : dd;
   mm = mm < 10 ? '0' + mm : mm;
   hh = hh < 10 ? '0' + hh : hh;
@@ -148,13 +147,12 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
   const form = e.target;
   const btn = form.querySelector(".submit-btn");
 
-  // Disable button temporarily
   btn.disabled = true;
   btn.textContent = "Submitting...";
 
   const quantaaID = document.getElementById("quantaaID").value.trim();
 
-  // Check for duplicate QuantaaID
+  // Check duplicate
   try {
     const searchResp = await fetch(`${sheetDB_API_URL}/search?quantaaID=${encodeURIComponent(quantaaID)}`);
     const searchData = await searchResp.json();
@@ -219,7 +217,6 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     showToast("❌ Network error. Please try again.", "danger");
   }
 
-  // Re-enable button
   btn.disabled = false;
   btn.textContent = "Register";
 });
