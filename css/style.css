@@ -20,12 +20,14 @@ label {
   color: #0d6efd;
   margin-bottom: 5px;
 }
+
 .hero-header h2 {
   font-size: 1.3rem;
   font-weight: 400;
   color: #555;
   margin-bottom: 12px;
 }
+
 .hero-header .divider {
   width: 180px;
   height: 3px;
@@ -42,6 +44,7 @@ label {
   box-shadow: 0 4px 18px rgba(0,0,0,0.07);
   transition: 0.25s ease;
 }
+
 .form-section:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 22px rgba(0,0,0,0.12);
@@ -57,6 +60,7 @@ label {
   padding-left: 10px;
   position: relative;
 }
+
 .section-title::before {
   content: "";
   width: 6px;
@@ -67,6 +71,7 @@ label {
   left: -15px;
   top: 4px;
 }
+
 .section-title i {
   margin-right: 8px;
   color: #0d6efd;
@@ -84,6 +89,7 @@ label {
   box-shadow: 0 4px 10px rgba(13,110,253,0.3);
   transition: 0.2s;
 }
+
 .btn-primary:hover {
   transform: translateY(-3px);
 }
@@ -142,31 +148,32 @@ label {
 
 /* Footer Styling */
 .footer {
-    text-align: center;
-    padding: 10px;
-    margin-top: 10px;
-    font-family: system-ui;
-    color: #555;
-    font-size: 0.8rem;
+  text-align: center;
+  padding: 10px;
+  margin-top: 10px;
+  font-family: system-ui;
+  color: #555;
+  font-size: 0.8rem;
 }
 
 /* Heart Animation */
 .heart {
-    color: red;
-    display: inline-block;
-    animation: pulse 1.2s infinite;
+  color: red;
+  display: inline-block;
+  animation: pulse 1.2s infinite;
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.3); }
-    100% { transform: scale(1); }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
 }
 
-/* Toast glowing bottom line animation */
+/* Toast Styling with Glowing Bottom Line */
 #toast {
   position: relative;
   overflow: hidden;
+  border-radius: 8px;
 }
 
 #toast::after {
@@ -175,7 +182,7 @@ label {
   bottom: 0;
   left: -100%;
   width: 100%;
-  height: 4px; /* thickness of the glowing line */
+  height: 4px;
   background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0) 100%);
   animation: glowLine 2s linear infinite;
 }
@@ -183,4 +190,11 @@ label {
 @keyframes glowLine {
   0% { left: -100%; }
   100% { left: 100%; }
+}
+
+/* Toast body padding */
+.toast-body {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
 }
