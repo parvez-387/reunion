@@ -56,20 +56,64 @@ copyPaymentBtn.addEventListener("click", () => {
 
 window.addEventListener("DOMContentLoaded", updatePaymentBox);
 
+// ---------------------------
+// Helper: Get current timestamp in dd/mm/yyyy hh:mm:ss AM/PM
+// ---------------------------
+function getCurrentTimestamp() {
+  const now = new Date();
 
-// -------------------------------------
-// GOOGLE SHEET FORM SUBMISSION + DUPLICATE CHECK
-// -------------------------------------
+  let dd = now.getDate();
+  let mm = now.getMonth() + 1; // Months start at 0
+  let yyyy = now.getFullYear();
+
+  let hh = now.getHours();
+  let min = now.getMinutes();
+  let sec = now.getSeconds();
+  const ampm = hh >= 12 ? "PM" : "AM";
+
+  hh = hh % 12;
+  hh = hh ? hh : 12; // 12-hour format
+  dd = dd < 10 ? '0' + dd : dd;
+  mm = mm < 10 ? '0' + mm : mm;
+  min = min < 10 ? '0' + min : min;
+  sec = sec < 10 ? '0' + sec : sec;
+
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}:${sec} ${ampm}`;
+}
+
+// ---------------------------
+// SheetDB Form Submission
+// ---------------------------
+
+// Replace with your SheetDB API URL
+const sheetDB_API_URL = "https://sheetdb.io/api/v1/a29ixq1ixk4ob";
+
 document.getElementById("registrationForm").addEventListener("submit", async function(e) {
   e.preventDefault();
-
   const form = e.target;
 
-  // Build JSON object for SheetDB
+  const quantaaID = document.getElementById("quantaaID").value.trim();
+
+  // 1️⃣ Check for duplicate Quantaa ID
+  try {
+    const searchResp = await fetch(`${sheetDB_API_URL}/search?quantaaID=${encodeURIComponent(quantaaID)}`);
+    const searchData = await searchResp.json();
+
+    if (searchData.length > 0) {
+      alert("❌ Quantaa ID already exists! Please use a different ID.");
+      return; // Stop submission
+    }
+  } catch (err) {
+    console.error("Error checking duplicates:", err);
+    alert("❌ Unable to verify Quantaa ID. Please try again.");
+    return;
+  }
+
+  // 2️⃣ Collect form data
   const data = {
     data: [
       {
-        quantaaID: document.getElementById("quantaaID").value.trim(),
+        quantaaID: quantaaID,
         quantaaName: document.getElementById("quantaaName").value.trim(),
         quantaaPhone: document.getElementById("quantaaPhone").value.trim(),
         batchNo: document.getElementById("batchNo").value.trim(),
@@ -81,31 +125,34 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
         feeAmount: document.getElementById("feeAmount").value.trim(),
         paymentMethod: document.getElementById("paymentMethod").value,
         transactionID: document.getElementById("transactionID").value.trim(),
-        suggestion: document.getElementById("suggestion").value.trim()
+        suggestion: document.getElementById("suggestion").value.trim(),
+        recordedBy: "Self",                        // NEW COLUMN
+        recordedOn: getCurrentTimestamp(),         // NEW COLUMN
+        status: "Recorded"                         // NEW COLUMN
       }
     ]
   };
 
+  // 3️⃣ Submit to SheetDB
   const btn = form.querySelector("button[type='submit']");
   btn.disabled = true;
   btn.textContent = "Submitting...";
 
   try {
-    const response = await fetch("https://sheetdb.io/api/v1/a29ixq1ixk4ob", {
+    const resp = await fetch(sheetDB_API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
 
-    if (response.ok) {
+    if (resp.ok) {
       alert("✔ Registration submitted successfully!");
       form.reset();
       updatePaymentBox();
     } else {
       alert("❌ Error submitting data.");
-      console.error(await response.text());
+      console.error(await resp.text());
     }
-
   } catch (err) {
     console.error(err);
     alert("❌ Network error. Please try again.");
@@ -114,4 +161,3 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
   btn.disabled = false;
   btn.textContent = "Register";
 });
-
