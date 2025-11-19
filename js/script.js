@@ -1,4 +1,6 @@
+// ---------------------------
 // Guest toggle
+// ---------------------------
 const bringGuest = document.getElementById("bringGuest");
 const guestCountContainer = document.getElementById("guestCountContainer");
 const guestInfo = document.getElementById("guestInfo");
@@ -13,7 +15,9 @@ bringGuest.addEventListener("change", function () {
   }
 });
 
-// Payment info
+// ---------------------------
+// Payment Info
+// ---------------------------
 const paymentMethodSelect = document.getElementById("paymentMethod");
 const paymentNumberBox = document.getElementById("paymentNumberBox");
 const paymentNumber = document.getElementById("paymentNumber");
@@ -51,3 +55,69 @@ copyPaymentBtn.addEventListener("click", () => {
 });
 
 window.addEventListener("DOMContentLoaded", updatePaymentBox);
+
+
+// -------------------------------------
+// GOOGLE SHEET FORM SUBMISSION + DUPLICATE CHECK
+// -------------------------------------
+
+document.getElementById("registrationForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const form = document.getElementById("registrationForm");
+
+  // Collect all form data manually into JSON
+  const data = {
+    quantaaID: document.getElementById("quantaaID").value.trim(),
+    quantaaName: document.getElementById("quantaaName").value.trim(),
+    quantaaPhone: document.getElementById("quantaaPhone").value.trim(),
+    batchNo: document.getElementById("batchNo").value.trim(),
+    fullAddress: document.getElementById("fullAddress").value.trim(),
+    tshirtSize: document.getElementById("tshirtSize").value,
+    bringGuest: document.getElementById("bringGuest").checked,
+    numGuests: document.getElementById("numGuests").value,
+    guestName: document.getElementById("guestName").value.trim(),
+    feeAmount: document.getElementById("feeAmount").value.trim(),
+    paymentMethod: document.getElementById("paymentMethod").value,
+    transactionID: document.getElementById("transactionID").value.trim(),
+    suggestion: document.getElementById("suggestion").value.trim()
+  };
+
+  // Your Apps Script Web App URL
+  const scriptURL = "https://script.google.com/macros/s/AKfycby6IqjYXY8J0SSdKPlyYnsEUZYCo9QdR8pdFv00rtgPUFrUZJ21Mv75m2UvzP4hBe8u/exec";
+
+  // Disable submit button while sending
+  const btn = document.querySelector("button[type='submit']");
+  btn.disabled = true;
+  btn.textContent = "Submitting...";
+
+  try {
+    const response = await fetch(scriptURL, {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: { "Content-Type": "application/json" }
+    });
+
+    const result = await response.json();
+
+    if (result.result === "success") {
+      alert("✔ Registration submitted successfully!");
+      form.reset();
+      updatePaymentBox();
+    }
+
+    else if (result.result === "duplicate") {
+      alert("❌ Quantaa ID already exists! Please use a different ID.");
+    }
+
+    else {
+      alert("❌ Error: " + (result.message || "Unknown error"));
+    }
+
+  } catch (err) {
+    alert("❌ Network Error. Please try again.");
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Register";
+});
