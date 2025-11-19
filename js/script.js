@@ -84,7 +84,7 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
   };
 
   // Your Apps Script Web App URL
-  const scriptURL = "https://script.google.com/macros/s/AKfycby6IqjYXY8J0SSdKPlyYnsEUZYCo9QdR8pdFv00rtgPUFrUZJ21Mv75m2UvzP4hBe8u/exec";
+  const scriptURL = "https://script.google.com/macros/s/AKfycbwbs0E6a3zsE-qSkvt386ro43SDij3Y4t-9VF_dFcvS8-kU9S6AuygblG6uZeFyrrfC/exec";
 
   // Disable submit button while sending
   const btn = document.querySelector("button[type='submit']");
@@ -121,3 +121,4 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
   btn.disabled = false;
   btn.textContent = "Register";
 });
+
