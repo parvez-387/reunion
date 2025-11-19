@@ -85,21 +85,20 @@ function getCurrentTimestamp() {
 // SheetDB Form Submission
 // ---------------------------
 
-// Replace this with your SheetDB API URL
 const sheetDB_API_URL = "https://sheetdb.io/api/v1/a29ixq1ixk4ob";
 
 document.getElementById("registrationForm").addEventListener("submit", async function(e) {
   e.preventDefault();
   const form = e.target;
-  const btn = form.querySelector(".submit-btn"); // make sure button has class="submit-btn"
+  const btn = form.querySelector(".submit-btn");
 
-  // 1️⃣ Temporarily disable the button
+  // Temporarily disable button
   btn.disabled = true;
   btn.textContent = "Submitting...";
 
   const quantaaID = document.getElementById("quantaaID").value.trim();
 
-  // 2️⃣ Check for duplicate Quantaa ID
+  // Duplicate check
   try {
     const searchResp = await fetch(`${sheetDB_API_URL}/search?quantaaID=${encodeURIComponent(quantaaID)}`);
     const searchData = await searchResp.json();
@@ -118,7 +117,7 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     return;
   }
 
-  // 3️⃣ Collect form data
+  // Collect form data
   const data = {
     data: [
       {
@@ -142,7 +141,7 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     ]
   };
 
-  // 4️⃣ Submit to SheetDB
+  // Submit to SheetDB
   try {
     const resp = await fetch(sheetDB_API_URL, {
       method: "POST",
@@ -163,7 +162,7 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     alert("❌ Network error. Please try again.");
   }
 
-  // 5️⃣ Re-enable the button
+  // Re-enable button
   btn.disabled = false;
   btn.textContent = "Register";
 });
