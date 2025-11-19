@@ -57,57 +57,15 @@ copyPaymentBtn.addEventListener("click", () => {
 window.addEventListener("DOMContentLoaded", updatePaymentBox);
 
 // ---------------------------
-// Bootstrap Toast Helper with Icon + Glowing Animation
+// Bootstrap Toast Helper
 // ---------------------------
 const toastEl = document.getElementById('toast');
 const toastBody = document.getElementById('toast-body');
 const toastBootstrap = new bootstrap.Toast(toastEl);
 
-// CSS for toast icon and glowing line
-const style = document.createElement('style');
-style.innerHTML = `
-.toast {
-  position: relative;
-  overflow: hidden;
-}
-.toast::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 5px;
-  background: linear-gradient(90deg, #0d6efd, #6ea8ff);
-  transform-origin: left;
-  animation: glowLine 3s linear forwards;
-}
-@keyframes glowLine {
-  0% { transform: scaleX(0); }
-  100% { transform: scaleX(1); }
-}
-.toast-icon {
-  margin-right: 8px;
-  font-weight: bold;
-}
-`;
-document.head.appendChild(style);
-
-// Icon mapping
-const toastIcons = {
-  success: '✔',
-  danger: '❌',
-  info: '⚠️',
-  primary: 'ℹ️'
-};
-
 function showToast(message, type = "primary") {
-  const icon = toastIcons[type] || 'ℹ️';
-  toastBody.innerHTML = `<span class="toast-icon">${icon}</span>${message}`;
+  toastBody.textContent = message;
   toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
-  
-  // Reset animation
-  toastEl.style.setProperty('--bs-toast-animation', 'none');
-  void toastEl.offsetWidth; // trigger reflow
   toastBootstrap.show();
 }
 
@@ -116,6 +74,7 @@ function showToast(message, type = "primary") {
 // ---------------------------
 function getCurrentTimestamp() {
   const now = new Date();
+
   let dd = now.getDate();
   let mm = now.getMonth() + 1;
   let yyyy = now.getFullYear();
@@ -128,6 +87,7 @@ function getCurrentTimestamp() {
   hh = hh % 12;
   hh = hh ? hh : 12;
 
+  // Leading zeros
   dd = dd < 10 ? '0' + dd : dd;
   mm = mm < 10 ? '0' + mm : mm;
   hh = hh < 10 ? '0' + hh : hh;
@@ -152,7 +112,7 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
 
   const quantaaID = document.getElementById("quantaaID").value.trim();
 
-  // Check duplicate
+  // Duplicate check
   try {
     const searchResp = await fetch(`${sheetDB_API_URL}/search?quantaaID=${encodeURIComponent(quantaaID)}`);
     const searchData = await searchResp.json();
@@ -208,9 +168,8 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
       form.reset();
       updatePaymentBox();
     } else {
-      const errorText = await resp.text();
-      console.error(errorText);
       showToast("❌ Error submitting data.", "danger");
+      console.error(await resp.text());
     }
   } catch (err) {
     console.error(err);
