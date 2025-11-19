@@ -63,7 +63,7 @@ function getCurrentTimestamp() {
   const now = new Date();
 
   let dd = now.getDate();
-  let mm = now.getMonth() + 1; // Months start at 0
+  let mm = now.getMonth() + 1;
   let yyyy = now.getFullYear();
 
   let hh = now.getHours();
@@ -72,7 +72,7 @@ function getCurrentTimestamp() {
   const ampm = hh >= 12 ? "PM" : "AM";
 
   hh = hh % 12;
-  hh = hh ? hh : 12; // 12-hour format
+  hh = hh ? hh : 12;
   dd = dd < 10 ? '0' + dd : dd;
   mm = mm < 10 ? '0' + mm : mm;
   min = min < 10 ? '0' + min : min;
@@ -85,31 +85,40 @@ function getCurrentTimestamp() {
 // SheetDB Form Submission
 // ---------------------------
 
-// Replace with your SheetDB API URL
+// Replace this with your SheetDB API URL
 const sheetDB_API_URL = "https://sheetdb.io/api/v1/a29ixq1ixk4ob";
 
 document.getElementById("registrationForm").addEventListener("submit", async function(e) {
   e.preventDefault();
   const form = e.target;
+  const btn = form.querySelector(".submit-btn"); // make sure button has class="submit-btn"
+
+  // 1️⃣ Temporarily disable the button
+  btn.disabled = true;
+  btn.textContent = "Submitting...";
 
   const quantaaID = document.getElementById("quantaaID").value.trim();
 
-  // 1️⃣ Check for duplicate Quantaa ID
+  // 2️⃣ Check for duplicate Quantaa ID
   try {
     const searchResp = await fetch(`${sheetDB_API_URL}/search?quantaaID=${encodeURIComponent(quantaaID)}`);
     const searchData = await searchResp.json();
 
     if (searchData.length > 0) {
       alert("❌ Quantaa ID already exists! Please use a different ID.");
-      return; // Stop submission
+      btn.disabled = false;
+      btn.textContent = "Register";
+      return;
     }
   } catch (err) {
     console.error("Error checking duplicates:", err);
     alert("❌ Unable to verify Quantaa ID. Please try again.");
+    btn.disabled = false;
+    btn.textContent = "Register";
     return;
   }
 
-  // 2️⃣ Collect form data
+  // 3️⃣ Collect form data
   const data = {
     data: [
       {
@@ -126,18 +135,14 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
         paymentMethod: document.getElementById("paymentMethod").value,
         transactionID: document.getElementById("transactionID").value.trim(),
         suggestion: document.getElementById("suggestion").value.trim(),
-        recordedBy: "Self",                        // NEW COLUMN
-        recordedOn: getCurrentTimestamp(),         // NEW COLUMN
-        status: "Recorded"                         // NEW COLUMN
+        recordedBy: "Self",
+        recordedOn: getCurrentTimestamp(),
+        status: "Recorded"
       }
     ]
   };
 
-  // 3️⃣ Submit to SheetDB
-  const btn = form.querySelector("button[type='submit']");
-  btn.disabled = true;
-  btn.textContent = "Submitting...";
-
+  // 4️⃣ Submit to SheetDB
   try {
     const resp = await fetch(sheetDB_API_URL, {
       method: "POST",
@@ -158,6 +163,7 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     alert("❌ Network error. Please try again.");
   }
 
+  // 5️⃣ Re-enable the button
   btn.disabled = false;
   btn.textContent = "Register";
 });
