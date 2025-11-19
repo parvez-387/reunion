@@ -60,62 +60,55 @@ window.addEventListener("DOMContentLoaded", updatePaymentBox);
 // -------------------------------------
 // GOOGLE SHEET FORM SUBMISSION + DUPLICATE CHECK
 // -------------------------------------
-
-document.getElementById("registrationForm").addEventListener("submit", async function (e) {
+document.getElementById("registrationForm").addEventListener("submit", async function(e) {
   e.preventDefault();
 
-  const form = document.getElementById("registrationForm");
+  const form = e.target;
 
-  // Collect all form data manually into JSON
+  // Build JSON object for SheetDB
   const data = {
-    quantaaID: document.getElementById("quantaaID").value.trim(),
-    quantaaName: document.getElementById("quantaaName").value.trim(),
-    quantaaPhone: document.getElementById("quantaaPhone").value.trim(),
-    batchNo: document.getElementById("batchNo").value.trim(),
-    fullAddress: document.getElementById("fullAddress").value.trim(),
-    tshirtSize: document.getElementById("tshirtSize").value,
-    bringGuest: document.getElementById("bringGuest").checked,
-    numGuests: document.getElementById("numGuests").value,
-    guestName: document.getElementById("guestName").value.trim(),
-    feeAmount: document.getElementById("feeAmount").value.trim(),
-    paymentMethod: document.getElementById("paymentMethod").value,
-    transactionID: document.getElementById("transactionID").value.trim(),
-    suggestion: document.getElementById("suggestion").value.trim()
+    data: [
+      {
+        quantaaID: document.getElementById("quantaaID").value.trim(),
+        quantaaName: document.getElementById("quantaaName").value.trim(),
+        quantaaPhone: document.getElementById("quantaaPhone").value.trim(),
+        batchNo: document.getElementById("batchNo").value.trim(),
+        fullAddress: document.getElementById("fullAddress").value.trim(),
+        tshirtSize: document.getElementById("tshirtSize").value,
+        bringGuest: document.getElementById("bringGuest").checked ? "Yes" : "No",
+        numGuests: document.getElementById("numGuests").value,
+        guestName: document.getElementById("guestName").value.trim(),
+        feeAmount: document.getElementById("feeAmount").value.trim(),
+        paymentMethod: document.getElementById("paymentMethod").value,
+        transactionID: document.getElementById("transactionID").value.trim(),
+        suggestion: document.getElementById("suggestion").value.trim()
+      }
+    ]
   };
 
-  // Your Apps Script Web App URL
-  const scriptURL = "https://script.google.com/macros/s/AKfycbwbs0E6a3zsE-qSkvt386ro43SDij3Y4t-9VF_dFcvS8-kU9S6AuygblG6uZeFyrrfC/exec";
-
-  // Disable submit button while sending
-  const btn = document.querySelector("button[type='submit']");
+  const btn = form.querySelector("button[type='submit']");
   btn.disabled = true;
   btn.textContent = "Submitting...";
 
   try {
-    const response = await fetch(scriptURL, {
+    const response = await fetch("https://sheetdb.io/api/v1/a29ixq1ixk4ob", {
       method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
     });
 
-    const result = await response.json();
-
-    if (result.result === "success") {
+    if (response.ok) {
       alert("✔ Registration submitted successfully!");
       form.reset();
       updatePaymentBox();
-    }
-
-    else if (result.result === "duplicate") {
-      alert("❌ Quantaa ID already exists! Please use a different ID.");
-    }
-
-    else {
-      alert("❌ Error: " + (result.message || "Unknown error"));
+    } else {
+      alert("❌ Error submitting data.");
+      console.error(await response.text());
     }
 
   } catch (err) {
-    alert("❌ Network Error. Please try again.");
+    console.error(err);
+    alert("❌ Network error. Please try again.");
   }
 
   btn.disabled = false;
