@@ -57,24 +57,65 @@ copyPaymentBtn.addEventListener("click", () => {
 window.addEventListener("DOMContentLoaded", updatePaymentBox);
 
 // ---------------------------
-// Bootstrap Toast Helper
+// Bootstrap Toast Helper with Icon + Glowing Animation
 // ---------------------------
 const toastEl = document.getElementById('toast');
 const toastBody = document.getElementById('toast-body');
 const toastBootstrap = new bootstrap.Toast(toastEl);
 
+// CSS for toast icon and glowing line (add dynamically via JS)
+const style = document.createElement('style');
+style.innerHTML = `
+.toast {
+  position: relative;
+  overflow: hidden;
+}
+.toast::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  background: linear-gradient(90deg, #0d6efd, #6ea8ff);
+  animation: glowLine 3s linear forwards;
+}
+@keyframes glowLine {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+.toast-icon {
+  margin-right: 8px;
+  font-weight: bold;
+}
+`;
+document.head.appendChild(style);
+
+// Icon mapping
+const toastIcons = {
+  success: '✔',
+  danger: '❌',
+  info: '⚠️',
+  primary: 'ℹ️'
+};
+
 function showToast(message, type = "primary") {
-  toastBody.textContent = message;
+  const icon = toastIcons[type] || 'ℹ️';
+  toastBody.innerHTML = `<span class="toast-icon">${icon}</span>${message}`;
   toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+  
+  // Reset animation
+  toastEl.style.setProperty('--bs-toast-animation', 'none');
+  void toastEl.offsetWidth; // trigger reflow
   toastBootstrap.show();
 }
+
 
 // ---------------------------
 // Helper: Get current timestamp in dd/mm/yyyy hh:mm:ss AM/PM
 // ---------------------------
 function getCurrentTimestamp() {
   const now = new Date();
-
   let dd = now.getDate();
   let mm = now.getMonth() + 1;
   let yyyy = now.getFullYear();
@@ -82,12 +123,12 @@ function getCurrentTimestamp() {
   let hh = now.getHours();
   let min = now.getMinutes();
   let sec = now.getSeconds();
-  const ampm = hh >= 12 ? "PM" : "AM"; // determine AM/PM
+  const ampm = hh >= 12 ? "PM" : "AM";
 
-  hh = hh % 12;      // convert to 12-hour format
-  hh = hh ? hh : 12; // if 0, set to 12
+  hh = hh % 12;
+  hh = hh ? hh : 12;
 
-  // add leading zeros
+  // Add leading zeros
   dd = dd < 10 ? '0' + dd : dd;
   mm = mm < 10 ? '0' + mm : mm;
   hh = hh < 10 ? '0' + hh : hh;
@@ -100,7 +141,6 @@ function getCurrentTimestamp() {
 // ---------------------------
 // SheetDB Form Submission
 // ---------------------------
-
 const sheetDB_API_URL = "https://sheetdb.io/api/v1/a29ixq1ixk4ob";
 
 document.getElementById("registrationForm").addEventListener("submit", async function(e) {
@@ -108,13 +148,13 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
   const form = e.target;
   const btn = form.querySelector(".submit-btn");
 
-  // Temporarily disable button
+  // Disable button temporarily
   btn.disabled = true;
   btn.textContent = "Submitting...";
 
   const quantaaID = document.getElementById("quantaaID").value.trim();
 
-  // Duplicate check
+  // Check for duplicate QuantaaID
   try {
     const searchResp = await fetch(`${sheetDB_API_URL}/search?quantaaID=${encodeURIComponent(quantaaID)}`);
     const searchData = await searchResp.json();
@@ -170,8 +210,9 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
       form.reset();
       updatePaymentBox();
     } else {
+      const errorText = await resp.text();
+      console.error(errorText);
       showToast("❌ Error submitting data.", "danger");
-      console.error(await resp.text());
     }
   } catch (err) {
     console.error(err);
