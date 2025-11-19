@@ -149,8 +149,9 @@ label {
 /* Footer Styling */
 .footer {
   text-align: center;
-  padding: 10px;
-  margin-top: 10px;
+  padding: 05px;
+  margin-top: 05px;
+		margin-bottom: 10px;
   font-family: system-ui;
   color: #555;
   font-size: 0.8rem;
