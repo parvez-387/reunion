@@ -118,14 +118,14 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     const searchData = await searchResp.json();
 
     if (searchData.length > 0) {
-      showToast("❌ Quantaa ID already exists! Please use a different ID.", "danger");
+      showToast("Quantaa ID already exists! Please use a different ID.", "danger");
       btn.disabled = false;
       btn.textContent = "Register";
       return;
     }
   } catch (err) {
     console.error("Error checking duplicates:", err);
-    showToast("❌ Unable to verify Quantaa ID. Please try again.", "danger");
+    showToast("Unable to verify Quantaa ID. Please try again.", "danger");
     btn.disabled = false;
     btn.textContent = "Register";
     return;
@@ -179,3 +179,4 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
   btn.disabled = false;
   btn.textContent = "Register";
 });
+
