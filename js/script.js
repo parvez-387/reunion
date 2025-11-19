@@ -50,11 +50,24 @@ paymentMethodSelect.addEventListener("change", updatePaymentBox);
 
 copyPaymentBtn.addEventListener("click", () => {
   navigator.clipboard.writeText(paymentNumber.textContent)
-    .then(() => alert(paymentNumber.textContent + " copied to clipboard!"))
-    .catch(() => alert("Failed to copy. Please try manually."));
+    .then(() => showToast(`${paymentNumber.textContent} copied to clipboard!`, "info"))
+    .catch(() => showToast("Failed to copy. Please try manually.", "danger"));
 });
 
 window.addEventListener("DOMContentLoaded", updatePaymentBox);
+
+// ---------------------------
+// Bootstrap Toast Helper
+// ---------------------------
+const toastEl = document.getElementById('toast');
+const toastBody = document.getElementById('toast-body');
+const toastBootstrap = new bootstrap.Toast(toastEl);
+
+function showToast(message, type = "primary") {
+  toastBody.textContent = message;
+  toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+  toastBootstrap.show();
+}
 
 // ---------------------------
 // Helper: Get current timestamp in dd/mm/yyyy hh:mm:ss AM/PM
@@ -69,12 +82,15 @@ function getCurrentTimestamp() {
   let hh = now.getHours();
   let min = now.getMinutes();
   let sec = now.getSeconds();
-  const ampm = hh >= 12 ? "PM" : "AM";
+  const ampm = hh >= 12 ? "PM" : "AM"; // determine AM/PM
 
-  hh = hh % 12;
-  hh = hh ? hh : 12;
+  hh = hh % 12;      // convert to 12-hour format
+  hh = hh ? hh : 12; // if 0, set to 12
+
+  // add leading zeros
   dd = dd < 10 ? '0' + dd : dd;
   mm = mm < 10 ? '0' + mm : mm;
+  hh = hh < 10 ? '0' + hh : hh;
   min = min < 10 ? '0' + min : min;
   sec = sec < 10 ? '0' + sec : sec;
 
@@ -104,14 +120,14 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     const searchData = await searchResp.json();
 
     if (searchData.length > 0) {
-      alert("❌ Quantaa ID already exists! Please use a different ID.");
+      showToast("❌ Quantaa ID already exists! Please use a different ID.", "danger");
       btn.disabled = false;
       btn.textContent = "Register";
       return;
     }
   } catch (err) {
     console.error("Error checking duplicates:", err);
-    alert("❌ Unable to verify Quantaa ID. Please try again.");
+    showToast("❌ Unable to verify Quantaa ID. Please try again.", "danger");
     btn.disabled = false;
     btn.textContent = "Register";
     return;
@@ -150,16 +166,16 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     });
 
     if (resp.ok) {
-      alert("✔ Registration submitted successfully!");
+      showToast("✔ Registration submitted successfully!", "success");
       form.reset();
       updatePaymentBox();
     } else {
-      alert("❌ Error submitting data.");
+      showToast("❌ Error submitting data.", "danger");
       console.error(await resp.text());
     }
   } catch (err) {
     console.error(err);
-    alert("❌ Network error. Please try again.");
+    showToast("❌ Network error. Please try again.", "danger");
   }
 
   // Re-enable button
