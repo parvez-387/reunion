@@ -10,23 +10,46 @@ label {
 
 
 
-.header {
+.banner {
+  height: 150px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 20px;
   padding: 1.5rem 2rem;
-  background-color: #ddeaff; /* soft light background */
+  background-color: #0d6efd; /* soft light background */
+  background-image: url('https://files.quantummethod.org.bd/media/image/photo/love_16_.jpg');
+  background-position: right top;  /* image aligned to top-right */
+  background-size: 100% auto; /* Custom scaling: width 150%, height auto */
+  filter: brightness(50%); /* 50% brightness → darker */
+  display: none;
+
 }
 
+.header {
+  height: 150px;
+  background-color: #0d6efd;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 20px;
+  color: white;
+}
+
+.logo-wrapper, .text-wrapper {
+  position: relative;
+  z-index: 1; /* above the gradient overlay */
+}
+
+
 .logo-wrapper {
+  flex-shrink: 0;
   font-size: 50px;
   color: #0d6efd;
   width: 80px;
   height: 80px;
-  margin:0 auto;
   border-radius:50%;
-  background:#f0f4f8;
+  background: white;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -40,25 +63,26 @@ label {
 
 /* Use meaningful, harmonious colors for title and subtitle */
 .title {
-  margin: 0;
-  font-size: 1.8rem;
+  margin-top: 5px;
+  font-size: 2rem;
   font-weight: 700;
-  color: #4a90e2; /* vibrant blue for title */
+  color: 0d6efd /* vibrant blue for title */
 }
 
 .subtitle {
   margin: 0;
   font-size: 1rem;
-  color: #f39c12; /* warm complementary color for subtitle */
+  color: white; /* warm complementary color for subtitle */
   margin-top: 0.25rem;
 }
 
 /* Responsive tweak */
 @media (max-width: 600px) {
-  .logo-wrapper img {
-    width: 70px;
-    height: 70px;
+
+  .header {
+    height: 100px;
   }
+
   .title {
     font-size: 1.3rem;
   }
