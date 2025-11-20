@@ -8,32 +8,85 @@ label {
   color: gray;
 }
 
-.hero-header {
-  text-align: center;
-  margin-top: 40px;
-  margin-bottom: 40px;
+
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  background-color: #ddeaff; /* soft light background */
 }
 
-.hero-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
+.logo-wrapper {
+  font-size: 50px;
   color: #0d6efd;
-  margin-bottom: 5px;
+  width: 80px;
+  height: 80px;
+  margin:0 auto;
+  border-radius:50%;
+  background:#f0f4f8;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 50%; /* optional for circle look */
 }
 
-.hero-header h2 {
+.text-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Use meaningful, harmonious colors for title and subtitle */
+.title {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #4a90e2; /* vibrant blue for title */
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 1rem;
+  color: #f39c12; /* warm complementary color for subtitle */
+  margin-top: 0.25rem;
+}
+
+/* Responsive tweak */
+@media (max-width: 600px) {
+  .logo-wrapper img {
+    width: 70px;
+    height: 70px;
+  }
+  .title {
+    font-size: 1.3rem;
+  }
+  .subtitle {
+    font-size: 0.95rem;
+  }
+}
+
+
+
+.row2 {
+  text-align: center;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.row2 h2 {
   font-size: 1.3rem;
   font-weight: 400;
   color: #555;
   margin-bottom: 12px;
 }
 
-.hero-header .divider {
-  width: 180px;
+.divider {
+  width: 80px;
   height: 3px;
-  background: linear-gradient(to right, #0d6efd, #6ea8fe);
-  margin: 0 auto;
-  border-radius: 4px;
+  background: rgb(3,129,255);
+  margin: 10px auto 0;
 }
 
 .form-section {
@@ -83,7 +136,7 @@ label {
 }
 
 .btn-primary {
-  padding: 12px 40px;
+  padding: 10px 50px;
   font-size: 1.25rem;
   border-radius: 50px;
   box-shadow: 0 4px 10px rgba(13,110,253,0.3);
@@ -149,9 +202,9 @@ label {
 /* Footer Styling */
 .footer {
   text-align: center;
-  padding: 05px;
-  margin-top: 05px;
-		margin-bottom: 10px;
+  padding: 5px;
+  margin-top: 5px;
+	margin-bottom: 10px;
   font-family: system-ui;
   color: #555;
   font-size: 0.8rem;
