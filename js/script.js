@@ -107,97 +107,63 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 const tableName = "registration";
 
-// Form submit event
-document.getElementById("registrationForm").addEventListener("submit", async function(e) {
-  e.preventDefault();
-  const form = e.target;
-  const btn = form.querySelector(".submit-btn");
+// Form submit
+document.getElementById("registrationForm").addEventListener("submit", async function(e){
+    e.preventDefault(); // prevents refresh
 
-  btn.disabled = true;
-  btn.textContent = "Submitting...";
+    const btn = this.querySelector(".submit-btn");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
 
-  const quantaaID = document.getElementById("quantaaID").value.trim();
+    const quantaaID = document.getElementById("quantaaID").value.trim();
 
-  // ---------------------------
-  // Duplicate check
-  // ---------------------------
-  try {
-    const { data: existing, error: searchError } = await supabase
+    // Duplicate check
+    const { data: existing, error: searchError } = await supabaseClient
       .from(tableName)
       .select("quantaaID")
       .eq("quantaaID", quantaaID);
 
-    if (searchError) throw searchError;
-
-    if (existing && existing.length > 0) {
-      showToast("Quantaa ID already exists! Please use a different ID.", "danger");
-      btn.disabled = false;
-      btn.textContent = "Register";
-      return;
+    if(searchError){
+        showToast("Error checking duplicates: "+searchError.message, "danger");
+        btn.disabled=false; btn.textContent="Register"; return;
     }
-  } catch (err) {
-    console.error("Error checking duplicates:", err);
-    showToast("Error during duplicate check: " + err.message, "danger");
-    btn.disabled = false;
-    btn.textContent = "Register";
-    return;
-  }
+    if(existing && existing.length>0){
+        showToast("Quantaa ID already exists!", "danger");
+        btn.disabled=false; btn.textContent="Register"; return;
+    }
 
-  // ---------------------------
-  // Collect form data
-  // ---------------------------
-  const dataToInsert = {
-    quantaaID: quantaaID,
-    quantaaName: document.getElementById("quantaaName").value.trim(),
-    quantaaPhone: document.getElementById("quantaaPhone").value.trim(),
-    batchNo: document.getElementById("batchNo").value.trim(),
-    fullAddress: document.getElementById("fullAddress").value.trim(),
-    tshirtSize: document.getElementById("tshirtSize").value,
-    bringGuest: document.getElementById("bringGuest").checked ? "Yes" : "No",
-    numGuests: document.getElementById("numGuests").value,
-    guestName: document.getElementById("guestName").value.trim(),
-    feeAmount: document.getElementById("feeAmount").value.trim(),
-    paymentMethod: document.getElementById("paymentMethod").value,
-    transactionID: document.getElementById("transactionID").value.trim(),
-    suggestion: document.getElementById("suggestion").value.trim(),
-    recordedBy: "Self",
-    recordedOn: getCurrentTimestamp(),
-    status: "Recorded"
-  };
+    // Collect form data
+    const dataToInsert = {
+        quantaaID,
+        quantaaName: document.getElementById("quantaaName").value.trim(),
+        quantaaPhone: document.getElementById("quantaaPhone").value.trim(),
+        batchNo: document.getElementById("batchNo").value.trim(),
+        fullAddress: document.getElementById("fullAddress").value.trim(),
+        tshirtSize: document.getElementById("tshirtSize").value,
+        bringGuest: document.getElementById("bringGuest").checked ? "Yes":"No",
+        numGuests: document.getElementById("numGuests").value,
+        guestName: document.getElementById("guestName").value.trim(),
+        feeAmount: document.getElementById("feeAmount").value.trim(),
+        paymentMethod: document.getElementById("paymentMethod").value,
+        transactionID: document.getElementById("transactionID").value.trim(),
+        suggestion: document.getElementById("suggestion").value.trim(),
+        recordedBy:"Self",
+        recordedOn:new Date().toISOString(),
+        status:"Recorded"
+    };
 
-  // ---------------------------
-  // Insert into Supabase with full error handling
-  // ---------------------------
-  try {
-    const { data: insertedData, error: insertError } = await supabase
+    const { data: insertedData, error: insertError } = await supabaseClient
       .from(tableName)
       .insert([dataToInsert]);
 
-    if (insertError) {
-      console.error("Insert error details:", insertError);
-      // Supabase returns message + details about missing columns
-      let errMsg = insertError.message;
-      if (insertError.details) errMsg += " | Details: " + insertError.details;
-      showToast("❌ Insert failed: " + errMsg, "danger");
+    if(insertError){
+        showToast("Insert failed: "+insertError.message, "danger");
     } else {
-      showToast("✔ Registration submitted successfully!", "success");
-      form.reset();
-      updatePaymentBox();
+        showToast("✔ Registration submitted successfully!", "success");
+        this.reset();
+        updatePaymentBox();
     }
-  } catch (err) {
-    console.error("Unexpected insert error:", err);
-    showToast("❌ Unexpected error: " + (err.message || err), "danger");
-  }
 
-  btn.disabled = false;
-  btn.textContent = "Register";
+    btn.disabled=false;
+    btn.textContent="Register";
 });
-
-// ---------------------------
-// Helper: get current timestamp
-// ---------------------------
-function getCurrentTimestamp() {
-  return new Date().toISOString();
-}
-
-
