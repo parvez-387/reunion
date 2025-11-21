@@ -98,10 +98,16 @@ function getCurrentTimestamp() {
 }
 
 // ---------------------------
-// SheetDB Form Submission
+// Supabase Registration Form
 // ---------------------------
-const sheetDB_API_URL = "https://sheetdb.io/api/v1/a29ixq1ixk4ob";
 
+// Initialize Supabase
+const supabaseUrl = "https://mmsfhjfjrjqyldkyfvgn.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tc2ZoamZqcmpxeWxka3lmdmduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2Njg3NjUsImV4cCI6MjA3OTI0NDc2NX0.9QseOdGWaLLjCktb7wE6GAMQsdklOXK3A4seW6UqD3U";
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const tableName = "registration";
+
+// Form submit event
 document.getElementById("registrationForm").addEventListener("submit", async function(e) {
   e.preventDefault();
   const form = e.target;
@@ -112,12 +118,18 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
 
   const quantaaID = document.getElementById("quantaaID").value.trim();
 
+  // ---------------------------
   // Duplicate check
+  // ---------------------------
   try {
-    const searchResp = await fetch(`${sheetDB_API_URL}/search?quantaaID=${encodeURIComponent(quantaaID)}`);
-    const searchData = await searchResp.json();
+    const { data: existing, error: searchError } = await supabase
+      .from(tableName)
+      .select("quantaaID")
+      .eq("quantaaID", quantaaID);
 
-    if (searchData.length > 0) {
+    if (searchError) throw searchError;
+
+    if (existing && existing.length > 0) {
       showToast("Quantaa ID already exists! Please use a different ID.", "danger");
       btn.disabled = false;
       btn.textContent = "Register";
@@ -131,48 +143,46 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     return;
   }
 
+  // ---------------------------
   // Collect form data
-  const data = {
-    data: [
-      {
-        quantaaID: quantaaID,
-        quantaaName: document.getElementById("quantaaName").value.trim(),
-        quantaaPhone: document.getElementById("quantaaPhone").value.trim(),
-        batchNo: document.getElementById("batchNo").value.trim(),
-        fullAddress: document.getElementById("fullAddress").value.trim(),
-        tshirtSize: document.getElementById("tshirtSize").value,
-        bringGuest: document.getElementById("bringGuest").checked ? "Yes" : "No",
-        numGuests: document.getElementById("numGuests").value,
-        guestName: document.getElementById("guestName").value.trim(),
-        feeAmount: document.getElementById("feeAmount").value.trim(),
-        paymentMethod: document.getElementById("paymentMethod").value,
-        transactionID: document.getElementById("transactionID").value.trim(),
-        suggestion: document.getElementById("suggestion").value.trim(),
-        recordedBy: "Self",
-        recordedOn: getCurrentTimestamp(),
-        status: "Recorded"
-      }
-    ]
+  // ---------------------------
+  const dataToInsert = {
+    quantaaID: quantaaID,
+    quantaaName: document.getElementById("quantaaName").value.trim(),
+    quantaaPhone: document.getElementById("quantaaPhone").value.trim(),
+    batchNo: document.getElementById("batchNo").value.trim(),
+    fullAddress: document.getElementById("fullAddress").value.trim(),
+    tshirtSize: document.getElementById("tshirtSize").value,
+    bringGuest: document.getElementById("bringGuest").checked ? "Yes" : "No",
+    numGuests: document.getElementById("numGuests").value,
+    guestName: document.getElementById("guestName").value.trim(),
+    feeAmount: document.getElementById("feeAmount").value.trim(),
+    paymentMethod: document.getElementById("paymentMethod").value,
+    transactionID: document.getElementById("transactionID").value.trim(),
+    suggestion: document.getElementById("suggestion").value.trim(),
+    recordedBy: "Self",
+    recordedOn: getCurrentTimestamp(),
+    status: "Recorded"
   };
 
-  // Submit to SheetDB
+  // ---------------------------
+  // Insert into Supabase
+  // ---------------------------
   try {
-    const resp = await fetch(sheetDB_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
+    const { error: insertError } = await supabase
+      .from(tableName)
+      .insert([dataToInsert]);
 
-    if (resp.ok) {
+    if (insertError) {
+      showToast("❌ Error submitting data.", "danger");
+      console.error(insertError);
+    } else {
       showToast("✔ Registration submitted successfully!", "success");
       form.reset();
       updatePaymentBox();
-    } else {
-      showToast("❌ Error submitting data.", "danger");
-      console.error(await resp.text());
     }
   } catch (err) {
-    console.error(err);
+    console.error("Insert error:", err);
     showToast("❌ Network error. Please try again.", "danger");
   }
 
@@ -180,3 +190,9 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
   btn.textContent = "Register";
 });
 
+// ---------------------------
+// Helper: get current timestamp
+// ---------------------------
+function getCurrentTimestamp() {
+  return new Date().toISOString();
+}
