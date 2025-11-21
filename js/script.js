@@ -98,73 +98,85 @@ function getCurrentTimestamp() {
 }
 
 // ---------------------------
-// Supabase Registration Form
+// SheetDB Form Submission
 // ---------------------------
+const sheetDB_API_URL = "https://sheetdb.io/api/v1/a29ixq1ixk4ob";
 
-// Initialize Supabase
-const supabaseUrl = "https://mmsfhjfjrjqyldkyfvgn.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tc2ZoamZqcmpxeWxka3lmdmduIiwicm9uIjoiYW5vbiIsImlhdCI6MTc2MzY2ODc2NSwiZXhwIjoyMDc5MjQ0NzY1fQ.9QseOdGWaLLjCktb7wE6GAMQsdklOXK3A4seW6UqD3U";
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-const tableName = "registration";
+document.getElementById("registrationForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const btn = form.querySelector(".submit-btn");
 
-// Form submit
-document.getElementById("registrationForm").addEventListener("submit", async function(e){
-    e.preventDefault(); // prevents refresh
+  btn.disabled = true;
+  btn.textContent = "Submitting...";
 
-    const btn = this.querySelector(".submit-btn");
-    btn.disabled = true;
-    btn.textContent = "Submitting...";
+  const quantaaID = document.getElementById("quantaaID").value.trim();
 
-    const quantaaID = document.getElementById("quantaaID").value.trim();
+  // Duplicate check
+  try {
+    const searchResp = await fetch(`${sheetDB_API_URL}/search?quantaaID=${encodeURIComponent(quantaaID)}`);
+    const searchData = await searchResp.json();
 
-    // Duplicate check
-    const { data: existing, error: searchError } = await supabaseClient
-      .from(tableName)
-      .select("quantaaID")
-      .eq("quantaaID", quantaaID);
-
-    if(searchError){
-        showToast("Error checking duplicates: "+searchError.message, "danger");
-        btn.disabled=false; btn.textContent="Register"; return;
+    if (searchData.length > 0) {
+      showToast("Quantaa ID already exists! Please use a different ID.", "danger");
+      btn.disabled = false;
+      btn.textContent = "Register";
+      return;
     }
-    if(existing && existing.length>0){
-        showToast("Quantaa ID already exists!", "danger");
-        btn.disabled=false; btn.textContent="Register"; return;
-    }
+  } catch (err) {
+    console.error("Error checking duplicates:", err);
+    showToast("Unable to verify Quantaa ID. Please try again.", "danger");
+    btn.disabled = false;
+    btn.textContent = "Register";
+    return;
+  }
 
-    // Collect form data
-    const dataToInsert = {
-        quantaaID,
+  // Collect form data
+  const data = {
+    data: [
+      {
+        quantaaID: quantaaID,
         quantaaName: document.getElementById("quantaaName").value.trim(),
         quantaaPhone: document.getElementById("quantaaPhone").value.trim(),
         batchNo: document.getElementById("batchNo").value.trim(),
         fullAddress: document.getElementById("fullAddress").value.trim(),
         tshirtSize: document.getElementById("tshirtSize").value,
-        bringGuest: document.getElementById("bringGuest").checked ? "Yes":"No",
+        bringGuest: document.getElementById("bringGuest").checked ? "Yes" : "No",
         numGuests: document.getElementById("numGuests").value,
         guestName: document.getElementById("guestName").value.trim(),
         feeAmount: document.getElementById("feeAmount").value.trim(),
         paymentMethod: document.getElementById("paymentMethod").value,
         transactionID: document.getElementById("transactionID").value.trim(),
         suggestion: document.getElementById("suggestion").value.trim(),
-        recordedBy:"Self",
-        recordedOn:new Date().toISOString(),
-        status:"Recorded"
-    };
+        recordedBy: "Self",
+        recordedOn: getCurrentTimestamp(),
+        status: "Recorded"
+      }
+    ]
+  };
 
-    const { data: insertedData, error: insertError } = await supabaseClient
-      .from(tableName)
-      .insert([dataToInsert]);
+  // Submit to SheetDB
+  try {
+    const resp = await fetch(sheetDB_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
 
-    if(insertError){
-        showToast("Insert failed: "+insertError.message, "danger");
+    if (resp.ok) {
+      showToast("✔ Registration submitted successfully!", "success");
+      form.reset();
+      updatePaymentBox();
     } else {
-        showToast("✔ Registration submitted successfully!", "success");
-        this.reset();
-        updatePaymentBox();
+      showToast("❌ Error submitting data.", "danger");
+      console.error(await resp.text());
     }
+  } catch (err) {
+    console.error(err);
+    showToast("❌ Network error. Please try again.", "danger");
+  }
 
-    btn.disabled=false;
-    btn.textContent="Register";
+  btn.disabled = false;
+  btn.textContent = "Register";
 });
 
