@@ -103,7 +103,7 @@ function getCurrentTimestamp() {
 
 // Initialize Supabase
 const supabaseUrl = "https://mmsfhjfjrjqyldkyfvgn.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tc2ZoamZqcmpxeWxka3lmdmduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2Njg3NjUsImV4cCI6MjA3OTI0NDc2NX0.9QseOdGWaLLjCktb7wE6GAMQsdklOXK3A4seW6UqD3U";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tc2ZoamZqcmpxeWxka3lmdmduIiwicm9uIjoiYW5vbiIsImlhdCI6MTc2MzY2ODc2NSwiZXhwIjoyMDc5MjQ0NzY1fQ.9QseOdGWaLLjCktb7wE6GAMQsdklOXK3A4seW6UqD3U";
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 const tableName = "registration";
 
@@ -137,7 +137,7 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     }
   } catch (err) {
     console.error("Error checking duplicates:", err);
-    showToast("Unable to verify Quantaa ID. Please try again.", "danger");
+    showToast("Error during duplicate check: " + err.message, "danger");
     btn.disabled = false;
     btn.textContent = "Register";
     return;
@@ -166,24 +166,27 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
   };
 
   // ---------------------------
-  // Insert into Supabase
+  // Insert into Supabase with full error handling
   // ---------------------------
   try {
-    const { error: insertError } = await supabase
+    const { data: insertedData, error: insertError } = await supabase
       .from(tableName)
       .insert([dataToInsert]);
 
     if (insertError) {
-      showToast("❌ Error submitting data.", "danger");
-      console.error(insertError);
+      console.error("Insert error details:", insertError);
+      // Supabase returns message + details about missing columns
+      let errMsg = insertError.message;
+      if (insertError.details) errMsg += " | Details: " + insertError.details;
+      showToast("❌ Insert failed: " + errMsg, "danger");
     } else {
       showToast("✔ Registration submitted successfully!", "success");
       form.reset();
       updatePaymentBox();
     }
   } catch (err) {
-    console.error("Insert error:", err);
-    showToast("❌ Network error. Please try again.", "danger");
+    console.error("Unexpected insert error:", err);
+    showToast("❌ Unexpected error: " + (err.message || err), "danger");
   }
 
   btn.disabled = false;
@@ -196,3 +199,5 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
 function getCurrentTimestamp() {
   return new Date().toISOString();
 }
+
+
