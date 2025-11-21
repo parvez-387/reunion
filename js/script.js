@@ -167,3 +167,4 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     btn.disabled=false;
     btn.textContent="Register";
 });
+
